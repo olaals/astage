@@ -10,6 +10,18 @@ Features:
 - Tell and ask methods for sending messages to the actor
 - Allows setting backpressure on the actor mailbox
 
+## Installation
+The library is available on PyPI and can be installed with for example pip or uv.
+
+With pip:
+```bash
+pip install astage
+```
+or uv
+```bash
+uv add astage
+```
+
 ## Example 
 ```python
 import asyncio
