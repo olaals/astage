@@ -1,17 +1,3 @@
-# astage
-
-Initial MVP for Async actor model library for Python
-
-Currently zero external dependencies outside of the Python standard library.
-
-Features:
-- Concurrent actor model with asyncio
-- Maps message types to handler methods on the actor
-- Tell and ask methods for sending messages to the actor
-- Allows setting backpressure on the actor mailbox
-
-## Example 
-```python
 import asyncio
 from dataclasses import dataclass
 from astage import Actor, handler
@@ -61,39 +47,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-```
-
-The message types also works with Pydantic classes, although Pydantic is not a dependency of the library.
-
-```python
-import asyncio
-from pydantic import BaseModel
-from astage import Actor, handler
-
-class IncrementMessage(BaseModel):
-    value: int
-
-class CounterActor(Actor):
-    def __init__(self):
-        super().__init__()
-        self.count = 0
-
-    @handler
-    async def increment(self, message: IncrementMessage):
-        self.count += message.value
-        return f"Count is now {self.count}"
-
-async def main():
-    actor = CounterActor()
-    handle = await actor.start()
-    
-    # create a message using a Pydantic class
-    pydantic_msg = IncrementMessage(value=10)
-
-    # ask: send a message and await a response
-    result = await handle.ask(pydantic_msg)
-    print(result)  # Expected: Count is now 10
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
