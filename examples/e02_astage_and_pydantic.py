@@ -5,7 +5,7 @@ from astage import Actor, handler
 class IncrementMessage(BaseModel):
     value: int
 
-class CounterActor(Actor):
+class CounterActor(Actor[IncrementMessage]):
     def __init__(self):
         super().__init__()
         self.count = 0

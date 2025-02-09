@@ -1,4 +1,6 @@
 # astage
+[![PyPI version](https://badge.fury.io/py/astage.svg)](https://badge.fury.io/py/astage)
+![Python versions](https://img.shields.io/pypi/pyversions/astage)
 
 Initial MVP for Async actor model library for Python
 
@@ -7,6 +9,7 @@ Currently zero external dependencies outside of the Python standard library.
 Features:
 - Concurrent actor model with asyncio
 - Maps message types to handler methods on the actor
+- Type hints on ask and tell methods on handler
 - Tell and ask methods for sending messages to the actor
 - Allows setting backpressure on the actor mailbox
 
@@ -36,7 +39,11 @@ class IncrementMessage:
 class EchoMessage:
     text: str
 
-class CounterActor(Actor):
+CounterActorMsg = IncrementMessage | EchoMessage
+
+# The type hints to the actor class enables type hints on the handlers ask and tell methods
+# All message types the actor has handlers for should be specified
+class CounterActor(Actor[CounterActorMsg]):
     def __init__(self):
         super().__init__()
         self.count = 0
@@ -85,7 +92,7 @@ from astage import Actor, handler
 class IncrementMessage(BaseModel):
     value: int
 
-class CounterActor(Actor):
+class CounterActor(Actor[IncrementMessage]):
     def __init__(self):
         super().__init__()
         self.count = 0

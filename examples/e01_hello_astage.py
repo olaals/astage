@@ -10,7 +10,9 @@ class IncrementMessage:
 class EchoMessage:
     text: str
 
-class CounterActor(Actor):
+CounterActorMsg = IncrementMessage | EchoMessage
+
+class CounterActor(Actor[CounterActorMsg]):
     def __init__(self):
         super().__init__()
         self.count = 0
