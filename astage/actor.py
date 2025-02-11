@@ -10,8 +10,10 @@ class Actor[T]:
 
     def __init__(self, max_queue_size: int = 0):
         self.msg_queue: asyncio.Queue[T | AskMessage[T]] = asyncio.Queue(max_queue_size)
-        self.is_running = False
         self.task: asyncio.Task[Any] | None = None
+        self.is_started: bool = False
+        self.is_stopped: bool = False
+        self.is_waiting: bool = False
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         """Ensure each subclass has its own registry."""
@@ -28,8 +30,10 @@ class Actor[T]:
 
     async def run(self) -> None:
         try:
-            while True:
+            while not self.is_stopped:
+                self.is_waiting = True
                 message = await self.msg_queue.get()
+                self.is_waiting = False
                 msg_type = type(message)
                 if isinstance(message, AskMessage):
                     ask_message = message
@@ -47,12 +51,22 @@ class Actor[T]:
             pass
 
     async def start(self) -> ActorHandle[T]:
-        if self.is_running:
+        if self.is_started:
             raise RuntimeError("Actor is already running")
-        self.is_running = True
+        self.is_started = True
         task = asyncio.create_task(self.run())
         self.task = task
-        return ActorHandle[T](self.msg_queue, task)
+        return ActorHandle[T](
+            self.msg_queue, 
+            task,
+            self.stop
+        )
+
+    def stop(self) -> None:
+        self.is_stopped = True
+        if self.is_waiting and self.task is not None:
+            self.task.cancel()
+
 
     def __del__(self) -> None:
         if self.task is not None:

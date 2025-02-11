@@ -1,11 +1,17 @@
 import asyncio
-from typing import Any
+from typing import Any, Callable
 from astage._internal.internal import AskMessage
 
 class ActorHandle[T]:
-    def __init__(self, msg_queue: asyncio.Queue[T | AskMessage[T]], task: asyncio.Task[None]):
+    def __init__(
+            self, 
+            msg_queue: asyncio.Queue[T | AskMessage[T]], 
+            task: asyncio.Task[None],
+            stop_func: Callable[[], None]
+    ):
         self.msg_queue = msg_queue
         self.task = task
+        self.stop_func = stop_func
 
     async def tell(self, message: T) -> None:
         await self.msg_queue.put(message)
@@ -28,7 +34,4 @@ class ActorHandle[T]:
             pass
 
     def stop(self) -> None:
-        # TODO: let the actor finish processing the current message before stopping
-        self.task.cancel()
-
-
+        self.stop_func()
